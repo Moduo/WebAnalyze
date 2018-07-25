@@ -1,36 +1,57 @@
 package main
 
 import (
-	"time"
+	"fmt"
 	"log"
 	"net/http"
-	"fmt"
+	"time"
+)
+
+var(
+	quit = false
 )
 
 func main() {
-	url := "https://www.swiftdevelopment.nl/"
-	poll(url)
+	urls := []string{
+		"https://www.swiftdevelopment.nl/",
+		"https://www.google.nl"}
+	pollSet(urls...)
 }
 
-func isHealthy (url string) bool {
+func isHealthy(url string) bool {
 	resp, err := http.Get("https://golangcode.com")
-    if err != nil {
-        log.Fatal(err)
+	if err != nil {
+		log.Fatal(err)
 	}
-	
-    if resp.StatusCode == 200 {
-        return true
-    }
+
+	if resp.StatusCode == 200 {
+		return true
+	}
 	return false
 }
 
-func poll (url string) {
-	for true {
-		if isHealthy(url){
-			fmt.Printf("%s is healthy\n", url)
+func poll(url string) {
+	output := ""
+	for {
+		if isHealthy(url) {
+			output = "%s is healthy"
 		} else {
-			fmt.Printf("%s is not healthy\n", url)
+			output = "%s is not healthy"
 		}
+		fmt.Printf(output + "\n", url)
 		time.Sleep(1000 * time.Millisecond)
 	}
+}
+
+func pollSet(urls ...string){
+	for _, url := range urls {
+		go poll(url)
+	}
+	for !quit{
+		time.Sleep(1000 * time.Millisecond)
+	}
+}
+
+func stopPolling(){
+	quit = true
 }
